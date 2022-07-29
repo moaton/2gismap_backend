@@ -3,6 +3,7 @@ const legalEntities = db.legalEntities;
 const uninhabitedPremise = db.uninhabitedPremise;
 const uninhabitedPremiseTwo = db.uninhabitedPremiseTwo;
 const cashRegisterMachine = db.cashRegisterMachine;
+
 const openGeocoder = require('node-open-geocoder');
 
 const Op = db.Sequelize.Op;
