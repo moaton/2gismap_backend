@@ -23,7 +23,7 @@ require("./app/routes/legalEntities.routes")(app);
 require("./app/routes/uninhabitedPremise.routes")(app);
 require("./app/routes/uninhabitedPremiseTwo.routes")(app);
 require("./app/routes/cashRegisterMachine.routes")(app);
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 8082
 // 8080
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`)
