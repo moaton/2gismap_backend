@@ -8,25 +8,28 @@ const openGeocoder = require('node-open-geocoder');
 
 const Op = db.Sequelize.Op;
 exports.create = (req, res) => {
-  if (!req.body.name) {
-    res.status(400).send({
-      message: "Content can not be empty!"
-    });
-    return;
+  let route
+  switch (req.baseUrl) {
+    case '/api/legal-entities':
+      route = legalEntities
+      break;
+    case '/api/uninhabited-premise':
+      route = uninhabitedPremise
+      break;
+    case '/api/uninhabited-premise-two':
+      route = uninhabitedPremiseTwo
+      break;
+    case '/api/cash-register-machine':
+      route = cashRegisterMachine
+      break;
+    default:
+      break;
   }
-  const mapData = {
-    
-  };
-  // MapData.create(mapData)
-  //   .then(data => {
-  //     res.send(data);
-  //   })
-  //   .catch(err => {
-  //     res.status(500).send({
-  //       message:
-  //         err.message || "Some error occurred while creating the mapData."
-  //     });
-  //   });
+  route.create(req.body).then(response => {
+    res.send({message: 'success', item: response.dataValues})
+  }).catch(err => {
+    console.log(err, 'err');
+  })
 };
 exports.findAll = (req, res) => {
   const lat = req.query.lat;
@@ -55,8 +58,6 @@ exports.findAll = (req, res) => {
     openGeocoder()
     .reverse(+lon, +lat)
     .end((error, response) => {
-      console.log('.end --> response', response)
-      console.log('.end --> error', error)
       if(response && (response.address.hasOwnProperty('locality') || response.address.hasOwnProperty('suburb') || response.address.hasOwnProperty('neighbourhood') || response.hasOwnProperty('display_name')) && response.address.hasOwnProperty('house_number')){
         condition = { address: { [Op.iLike]: `%${response.address.hasOwnProperty('locality') ? response.address.locality.replace(/(\-й\sмикрорайон|микрорайон )/ ,'') : response.address.hasOwnProperty('neighbourhood') ? response.address.neighbourhood.replace(/(\-й\sмикрорайон|микрорайон)/,'') : response.address.hasOwnProperty('suburb') ? response.address.suburb.replace(/(\-й\sмикрорайон|микрорайон)/,'') : response.display_name.split(', ')[1].replace(/(\-й\sмикрорайон|микрорайон )/ ,'')}, д.${response.address.house_number},%` } }
         route.findAll({ where: condition })
@@ -65,7 +66,6 @@ exports.findAll = (req, res) => {
             `select * from uninhabitedpremisetwos WHERE "uninhabitedpremisetwos"."street_name" ILIKE '% ${response.address.hasOwnProperty('locality') ? response.address.locality.replace(/(\-й\sмикрорайон|микрорайон )/ ,'') : response.address.hasOwnProperty('neighbourhood') ? response.address.neighbourhood.replace(/(\-й\sмикрорайон|микрорайон)/,'') : response.address.hasOwnProperty('suburb') ? response.address.suburb.replace(/(\-й\sмикрорайон|микрорайон)/,'') : response.display_name.split(', ')[1].replace(/(\-й\sмикрорайон|микрорайон )/ ,'')}%' and
             "uninhabitedpremisetwos"."house_number" ILIKE '%д. ${response.address.house_number}%'`,{ type: db.sequelize.QueryTypes.SELECT}
           );
-          console.log(result, 'result');
           const dataTo = {
             legalentities: data,
             uninhabitedpremises: result,
@@ -96,23 +96,50 @@ exports.findAll = (req, res) => {
   
 };
 exports.findOne = async (req, res) => {
-  const resultsCash = await db.sequelize.query(
-    `select * from cashregistermachines where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
-  );
-  const resultsHabit = await db.sequelize.query(
-    `select * from cashregistermachines
-    right join uninhabitedpremises on uninhabitedpremises.business_id = cashregistermachines.business_id
-    where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
-  );
-  console.log(resultsHabit, 'resultsHabit', resultsCash); // ВЫВОД ДАННЫХ НУЖНО ПОДКОРРЕКТИРОВАТЬ
-  const payload = {
-    cashregistermachines: resultsCash.length !== 0 ? resultsCash[0]: [],
-    uninhabitedpremises : resultsHabit.length !== 0 ? resultsHabit[0]: [], 
+  
+  if(req.query.ismore){
+    const resultsCash = await db.sequelize.query(
+      `select * from cashregistermachines where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
+    );
+    const resultsHabit = await db.sequelize.query(
+      `select * from cashregistermachines
+      right join uninhabitedpremises on uninhabitedpremises.business_id = cashregistermachines.business_id
+      where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
+    );
+    console.log(resultsHabit, 'resultsHabit', resultsCash); // ВЫВОД ДАННЫХ НУЖНО ПОДКОРРЕКТИРОВАТЬ
+    const payload = {
+      cashregistermachines: resultsCash.length !== 0 ? resultsCash[0]: [],
+      uninhabitedpremises : resultsHabit.length !== 0 ? resultsHabit[0]: [], 
+    }
+    res.send(payload)
+  } else {
+    legalEntities.findOne({where: {id: req.params.id}}).then(data => {
+      res.send(data)
+    })
+    // два запроса один после обновления другой те верхние как то связать
+    // или на фронте айтемс в моредетайлс в сторе закинуть
   }
-  res.send(payload)
 };
 exports.update = (req, res) => {
-  
+  let route
+  switch (req.baseUrl) {
+    case '/api/legal-entities':
+      route = legalEntities
+      break;
+    case '/api/uninhabited-premise':
+      route = uninhabitedPremise
+      break;
+    case '/api/uninhabited-premise-two':
+      route = uninhabitedPremiseTwo
+      break;
+    case '/api/cash-register-machine':
+      route = cashRegisterMachine
+      break;
+    default:
+      break;
+  }
+  route.update(req.body, {where: {id: req.params.id}})
+  res.send({message: 'success', item: req.body})
 };
 exports.delete = (req, res) => {
   

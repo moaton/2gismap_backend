@@ -7,8 +7,6 @@ const saltRounds = 10;
 const Op = db.Sequelize.Op;
 exports.create = async (req, res) => {
   try {
-    console.log(!!req.body && !!req.body.username && !!req.body.password,'req.body');
-
     if(!!req.body && !!req.body.username && !!req.body.password){
       const usersData = await users.findAll({where: {username: req.body.username.toLowerCase()}})
       if(usersData.length === 0 && req.body.type === 'reg'){
@@ -40,7 +38,6 @@ exports.create = async (req, res) => {
           });
       });
       } else if(usersData.length !== 0 && req.body.type === 'auth') {
-        console.log(usersData.length,'usersData.length',usersData[0].dataValues);
         bcrypt.compare(req.body.password, usersData[0].dataValues.password, async function(err, result) {
           if(result){
             res.send({message: 'success', user: {
