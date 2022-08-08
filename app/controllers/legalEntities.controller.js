@@ -106,7 +106,7 @@ exports.findOne = async (req, res) => {
       right join uninhabitedpremises on uninhabitedpremises.business_id = cashregistermachines.business_id
       where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
     );
-    console.log(resultsHabit, 'resultsHabit', resultsCash); // ВЫВОД ДАННЫХ НУЖНО ПОДКОРРЕКТИРОВАТЬ
+    // console.log(resultsHabit, 'resultsHabit', resultsCash); // ВЫВОД ДАННЫХ НУЖНО ПОДКОРРЕКТИРОВАТЬ
     const payload = {
       cashregistermachines: resultsCash.length !== 0 ? resultsCash[0]: [],
       uninhabitedpremises : resultsHabit.length !== 0 ? resultsHabit[0]: [], 
@@ -121,24 +121,23 @@ exports.findOne = async (req, res) => {
   }
 };
 exports.update = (req, res) => {
-  let route
+  let route, condition = {id: req.params.id}
   switch (req.baseUrl) {
     case '/api/legal-entities':
       route = legalEntities
       break;
     case '/api/uninhabited-premise':
       route = uninhabitedPremise
-      break;
-    case '/api/uninhabited-premise-two':
-      route = uninhabitedPremiseTwo
+      condition = {business_id: req.params.id}
       break;
     case '/api/cash-register-machine':
       route = cashRegisterMachine
+      condition = {registration_number: req.params.id}
       break;
     default:
       break;
   }
-  route.update(req.body, {where: {id: req.params.id}})
+  route.update(req.body, {where: condition}).catch(err => console.log(err))
   res.send({message: 'success', item: req.body})
 };
 exports.delete = (req, res) => {
