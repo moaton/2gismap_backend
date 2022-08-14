@@ -141,33 +141,34 @@ exports.update = (req, res) => {
   res.send({message: 'success', item: req.body})
 };
 exports.delete = async (req, res) => {
-  let condition = {id: req.params.id}
-  const resultsCash = await db.sequelize.query(
-    `select * from cashregistermachines where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
-  );
-  const resultsHabit = await db.sequelize.query(
-    `select * from cashregistermachines
-    right join uninhabitedpremises on uninhabitedpremises.business_id = cashregistermachines.business_id
-    where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
-  );
-  if(resultsHabit.length !== 0 && resultsCash.length !== 0){
-    console.log('resultsHabit', resultsHabit);
-    // uninhabitedPremise.delete({where: {uninhabitedpremises: resultsCash[0].business_id}})
+  if(req.query.isUninhabitedPremiseTwos){
     db.sequelize.query(
-      `DELETE FROM uninhabitedpremises WHERE business_id='${resultsCash[0].business_id}'`,{ type: db.sequelize.QueryTypes.DELETE}
+      `DELETE FROM uninhabitedpremisetwos WHERE business_id='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
+    );
+  } else {
+    const resultsCash = await db.sequelize.query(
+      `select * from cashregistermachines where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
+    );
+    const resultsHabit = await db.sequelize.query(
+      `select * from cashregistermachines
+      right join uninhabitedpremises on uninhabitedpremises.business_id = cashregistermachines.business_id
+      where cashregistermachines.registration_number = '${req.params.id}'`,{ type: db.sequelize.QueryTypes.SELECT}
+    );
+    if(resultsHabit.length !== 0 && resultsCash.length !== 0){
+      db.sequelize.query(
+        `DELETE FROM uninhabitedpremises WHERE business_id='${resultsCash[0].business_id}'`,{ type: db.sequelize.QueryTypes.DELETE}
+      );
+    }
+    if(resultsCash.length !== 0){
+      db.sequelize.query(
+        `DELETE FROM cashregistermachines WHERE registration_number='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
+      );
+    }
+    db.sequelize.query(
+      `DELETE FROM legalentities WHERE id='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
     );
   }
-  if(resultsCash.length !== 0){
-    console.log('resultsCash', resultsCash);
-    // cashRegisterMachine.delete({where: {registration_number: req.params.id}})
-    db.sequelize.query(
-      `DELETE FROM cashregistermachines WHERE registration_number='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
-    );
-  }
-  // legalEntities.delete({where: condition})
-  db.sequelize.query(
-    `DELETE FROM legalentities WHERE id='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
-  );
+  
   res.send({message: 'success'})
 };
 exports.deleteAll = (req, res) => {
