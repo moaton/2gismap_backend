@@ -141,8 +141,8 @@ exports.update = (req, res) => {
   res.send({message: 'success', item: req.body})
 };
 exports.delete = async (req, res) => {
-  console.log(req.query, ' | ', req.query.isUninhabitedPremiseTwos);
-  if(req.query.isUninhabitedPremiseTwos){
+  console.log(req.query, ' | ', req.query.isUninhabitedPremiseTwos === false);
+  if(req.query.isUninhabitedPremiseTwos === false){
     db.sequelize.query(
       `DELETE FROM uninhabitedpremisetwos WHERE business_id='${req.params.id}'`,{ type: db.sequelize.QueryTypes.DELETE}
     );
