@@ -24,6 +24,7 @@ require("./app/routes/uninhabitedPremise.routes")(app);
 require("./app/routes/uninhabitedPremiseTwo.routes")(app);
 require("./app/routes/cashRegisterMachine.routes")(app);
 require("./app/routes/users.routes")(app);
+require("./app/routes/tickets.routes")(app);
 
 const PORT = process.env.PORT || 8082
 // 8080

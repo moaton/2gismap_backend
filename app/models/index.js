@@ -20,5 +20,6 @@ db.uninhabitedPremise = require('./uninhabitedPremise.model.js')(sequelize, Sequ
 db.uninhabitedPremiseTwo = require('./uninhabitedPremiseTwo.model.js')(sequelize, Sequelize)
 db.cashRegisterMachine = require('./cashRegisterMachine.model.js')(sequelize, Sequelize)
 db.users = require('./users.model.js')(sequelize, Sequelize)
+db.tickets = require('./tickets.model.js')(sequelize, Sequelize)
 
 module.exports = db;
