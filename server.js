@@ -5,6 +5,8 @@ const app = express()
 var corsOptions = {
   origin: '*'
 }
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors(corsOptions))
 

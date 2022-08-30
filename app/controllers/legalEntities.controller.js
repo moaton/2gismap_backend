@@ -3,6 +3,7 @@ const legalEntities = db.legalEntities;
 const uninhabitedPremise = db.uninhabitedPremise;
 const uninhabitedPremiseTwo = db.uninhabitedPremiseTwo;
 const cashRegisterMachine = db.cashRegisterMachine;
+const Papa = require('papaparse')
 
 const openGeocoder = require('node-open-geocoder');
 
@@ -24,6 +25,13 @@ exports.create = (req, res) => {
       break;
     default:
       break;
+  }
+  if(!!req.query.verify_file == true){
+    const decodedBase64String = Buffer.from(req.body.data.split(',')[1], 'base64').toString();
+
+
+    console.log(Papa.parse(decodedBase64String));
+    return
   }
   route.create(req.body).then(response => {
     res.send({message: 'success', item: response.dataValues})
